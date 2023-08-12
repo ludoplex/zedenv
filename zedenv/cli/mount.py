@@ -18,7 +18,7 @@ from zedenv.lib.logger import ZELogger
 
 def mount_children(child_datasets: list, mountpoint: str, verbose: bool):
     for cd in child_datasets:
-        if cd['mountpoint'] == "none" or cd['mountpoint'] == "legacy":
+        if cd['mountpoint'] in ["none", "legacy"]:
             ZELogger.verbose_log({
                 "level": "INFO",
                 "message": (f"Skipped mounting dataset {cd['name']} "
@@ -98,9 +98,7 @@ def zedenv_mount(boot_environment: str, mountpoint: Optional[str],
     if not verbose:
         ZELogger.log({"level": "INFO", "message": mountpoint})
 
-    child_datasets = zedenv.lib.be.list_child_mountpoints(be_dataset)
-
-    if child_datasets:
+    if child_datasets := zedenv.lib.be.list_child_mountpoints(be_dataset):
         ZELogger.verbose_log({
             "level": "INFO",
             "message": f"Mounting children of '{boot_environment}'.\n"

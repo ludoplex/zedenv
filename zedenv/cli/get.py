@@ -22,9 +22,8 @@ def format_get(get_line: list,
     """
     if scripting:
         return "\t".join(get_line)
-    else:
-        fmt_line = ["{{: <{width}}}".format(width=(w + 1)) for w in widths]
-        return " ".join(fmt_line).format(*get_line)
+    fmt_line = ["{{: <{width}}}".format(width=(w + 1)) for w in widths]
+    return " ".join(fmt_line).format(*get_line)
 
 
 def get_set_properties(property_index: int,
@@ -67,7 +66,7 @@ def zedenv_get(zedenv_properties: Optional[list],
         zedenv_props = zedenv_properties if zedenv_properties else ["all"]
 
         if recursive:
-            property_index = property_index + 1
+            property_index += 1
             columns.insert(0, "name")  # Include dataset if recursive
 
         props = None
@@ -137,10 +136,7 @@ def zedenv_get(zedenv_properties: Optional[list],
             if len(w) > widths[i]:
                 widths[i] = len(w)
 
-    formatted_list_entries = [format_get(b, scripting, widths)
-                              for b in set_properties]
-
-    return formatted_list_entries
+    return [format_get(b, scripting, widths) for b in set_properties]
 
 
 @click.command(name="get",

@@ -91,8 +91,9 @@ class FreeBSDLoader(plugin_config.Plugin):
 
         loader_configs = [system_loader_config]
 
-        self.zfs_be = True if os.path.isfile(
-            os.path.join(be_mountpoint, self.zfs_be_path)) else False
+        self.zfs_be = bool(
+            os.path.isfile(os.path.join(be_mountpoint, self.zfs_be_path))
+        )
 
         temp_zpool_cache_path = os.path.join(be_mountpoint, self.zpool_cache)
         system_zpool_cache_path = os.path.join("/", self.zpool_cache)

@@ -182,11 +182,12 @@ class Plugin(object):
                             f"'/etc/fstab'.\n")
             })
         else:
-            ZELogger.log({
-                "level": "INFO",
-                "message": (f"Couldn't find directory to replace in fstab, your system "
-                            "may not be configured correctly for boot environments.")
-            })
+            ZELogger.log(
+                {
+                    "level": "INFO",
+                    "message": "Couldn't find directory to replace in fstab, your system may not be configured correctly for boot environments.",
+                }
+            )
 
         if not self.noop:
             try:

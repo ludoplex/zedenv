@@ -17,9 +17,8 @@ def format_boot_environment(be_list_line: list,
     """
     if scripting:
         return "\t".join(be_list_line)
-    else:
-        fmt_line = ["{{: <{width}}}".format(width=(w + 1)) for w in widths]
-        return " ".join(fmt_line).format(*be_list_line)
+    fmt_line = ["{{: <{width}}}".format(width=(w + 1)) for w in widths]
+    return " ".join(fmt_line).format(*be_list_line)
 
 
 def configure_boot_environment_list(be_root: str,
@@ -53,9 +52,9 @@ def configure_boot_environment_list(be_root: str,
                 active += "R"
             boot_environment_entry.append(active)
 
-            # Add mountpoint
-            dataset_mountpoint = pyzfscmds.system.agnostic.dataset_mountpoint(env['name'])
-            if dataset_mountpoint:
+            if dataset_mountpoint := pyzfscmds.system.agnostic.dataset_mountpoint(
+                env['name']
+            ):
                 boot_environment_entry.append(dataset_mountpoint)
             else:
                 boot_environment_entry.append("-")

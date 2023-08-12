@@ -16,7 +16,7 @@ def vcs_release(version: str):
     except subprocess.CalledProcessError:
         return version
 
-    return version + '+git.' + git_hash
+    return f'{version}+git.{git_hash}'
 
 
 def get_release_version(version: str):

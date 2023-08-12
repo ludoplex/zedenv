@@ -51,11 +51,12 @@ def bootfs_for_pool(zpool: str) -> str:
     except RuntimeError:
         raise
 
-    bootfs = [i.split()[0] for i in bootfs_list.splitlines() if i.split()[0] != "-"]
-    if not bootfs:
+    if bootfs := [
+        i.split()[0] for i in bootfs_list.splitlines() if i.split()[0] != "-"
+    ]:
+        return bootfs[0]
+    else:
         raise RuntimeError("No bootfs has been set on zpool")
-
-    return bootfs[0]
 
 
 def properties(dataset, appended_properties: Optional[list]) -> list:
@@ -105,7 +106,7 @@ def properties(dataset, appended_properties: Optional[list]) -> list:
             if (mp_len >= alt_len) and (val[:alt_len] == altroot):
                 mountpoint = "mountpoint=/"
                 if mp_len != alt_len:
-                    mountpoint = mountpoint + val[alt_len:]
+                    mountpoint += val[alt_len:]
                 used_props[i] = mountpoint
 
     return used_props
@@ -168,10 +169,7 @@ def extra_bpool() -> bool:
 
 def mount_pool(mount_dataset: str = "/") -> Optional[str]:
     mountpoint_dataset = pyzfscmds.system.agnostic.mountpoint_dataset(mount_dataset)
-    if mountpoint_dataset is None:
-        return None
-
-    return mountpoint_dataset.split("/")[0]
+    return None if mountpoint_dataset is None else mountpoint_dataset.split("/")[0]
 
 
 def dataset_pool(dataset: str, zfs_type: str = 'filesystem') -> Optional[str]:
@@ -185,7 +183,7 @@ def is_current_boot_environment(boot_environment: str) -> bool:
     root_dataset = pyzfscmds.system.agnostic.mountpoint_dataset("/")
 
     be_root = root()
-    if be_root is None or not (root_dataset == f"{be_root}/{boot_environment}"):
+    if be_root is None or root_dataset != f"{be_root}/{boot_environment}":
         return False
 
     return is_active_boot_environment(f"{be_root}/{boot_environment}",
@@ -197,7 +195,7 @@ def is_active_boot_environment(boot_environment_dataset: str, zpool: str) -> boo
 
 
 def split_zfs_output(zfs_list: str) -> list:
-    property_list = [line for line in zfs_list.splitlines()]
+    property_list = list(zfs_list.splitlines())
     return [line.split() for line in property_list]
 
 

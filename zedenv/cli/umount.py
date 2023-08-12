@@ -29,8 +29,9 @@ def zedenv_umount(boot_environment: str, verbose: bool, be_root: str):
             "message": f"Failed to get list of datasets for '{boot_environment}'.\n{e}"
         }, exit_on_error=True)
 
-    mountpoint = pyzfscmds.system.agnostic.dataset_mountpoint(boot_environment_dataset)
-    if mountpoint:
+    if mountpoint := pyzfscmds.system.agnostic.dataset_mountpoint(
+        boot_environment_dataset
+    ):
         # If a separate ZFS boot pool is used, start with unmounting the corresponding boot dataset
         if zedenv.lib.be.extra_bpool():
             try:
@@ -42,8 +43,7 @@ def zedenv_umount(boot_environment: str, verbose: bool, be_root: str):
                 }, exit_on_error=True)
 
     for d in zedenv.lib.be.split_zfs_output(child_datasets_unformatted):
-        mountpoint = pyzfscmds.system.agnostic.dataset_mountpoint(d[0])
-        if mountpoint:
+        if mountpoint := pyzfscmds.system.agnostic.dataset_mountpoint(d[0]):
             try:
                 zedenv.lib.system.umount(mountpoint)
             except RuntimeError as e:

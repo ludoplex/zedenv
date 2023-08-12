@@ -148,7 +148,7 @@ def disable_children_automount(be_child_datasets: List[str],
     Dont run if noop
     """
     for ds in be_child_datasets:
-        if not (be_requested in ds) and not (boot_environment_root == ds):
+        if be_requested not in ds and boot_environment_root != ds:
             try:
                 pyzfscmds.cmd.zfs_set(ds, "canmount=noauto")
             except RuntimeError as e:
@@ -291,7 +291,7 @@ def zedenv_activate(boot_environment: str,
             "message": f"Failed to list datasets under {boot_environment_root}\n{e}\n"
         }, exit_on_error=True)
 
-    be_child_datasets_list = [line for line in be_child_datasets.splitlines()]
+    be_child_datasets_list = list(be_child_datasets.splitlines())
     if not noop:
         disable_children_automount(be_child_datasets_list,
                                    be_requested,
@@ -314,7 +314,7 @@ def zedenv_activate(boot_environment: str,
                 "message": f"Failed to list datasets under {boot_environment_boot}\n{e}\n"
             }, exit_on_error=True)
 
-        be_boot_child_datasets_list = [line for line in boot_child_datasets.splitlines()]
+        be_boot_child_datasets_list = list(boot_child_datasets.splitlines())
         if not noop:
             disable_children_automount(
                 be_boot_child_datasets_list,
