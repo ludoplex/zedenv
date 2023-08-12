@@ -64,9 +64,8 @@ class ZELogger:
         elif log['level'] == 'EXCEPTION':
             if not exit_on_error:
                 raise RuntimeError(log['message'])
-            else:
-                cls.logger.error(log['message'])
-                raise SystemExit(1)
+            cls.logger.error(log['message'])
+            raise SystemExit(1)
 
     @classmethod
     def log(cls, content, exit_on_error=False):

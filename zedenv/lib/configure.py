@@ -6,29 +6,22 @@ from zedenv.lib.logger import ZELogger
 
 # Import plugins
 def get_plugins():
-    # https://packaging.python.org/guides/packaging-namespace-packages/
-    # https://packaging.python.org/guides/creating-and-discovering-plugins/
-
-    plugins = {}
-
-    for entry_point in pkg_resources.iter_entry_points('zedenv.plugins'):
-        plugins[entry_point.name] = entry_point.load()
-
-    return plugins
+    return {
+        entry_point.name: entry_point.load()
+        for entry_point in pkg_resources.iter_entry_points('zedenv.plugins')
+    }
 
 
 def get_bootloader_properties():
     plugins = get_plugins()
-    plugin_list = []
-
-    for p in plugins:
-        if platform.system().lower() in plugins[p].systems_allowed:
-            plugin_list.append({
-                "bootloader": plugins[p].bootloader,
-                "properties": plugins[p].allowed_properties
-            })
-
-    return plugin_list
+    return [
+        {
+            "bootloader": plugins[p].bootloader,
+            "properties": plugins[p].allowed_properties,
+        }
+        for p in plugins
+        if platform.system().lower() in plugins[p].systems_allowed
+    ]
 
 
 def get_bootloader(boot_environment: str,

@@ -52,12 +52,11 @@ class SystemdBoot(plugin_config.Plugin):
 
         target = re.compile(regex)
 
-        conf_matches = []
-        # Find match lines
-        for i, m in enumerate(new_conf_list):
-            if target.search(m):
-                conf_matches += [(i, target.search(m))]
-
+        conf_matches = [
+            (i, target.search(m))
+            for i, m in enumerate(new_conf_list)
+            if target.search(m)
+        ]
         for l in conf_matches:
             if l[1]:
                 new_conf_list[l[0]] = re.sub(regex, regex_replace, config[l[0]])
@@ -97,8 +96,8 @@ class SystemdBoot(plugin_config.Plugin):
         config_matches = [en.split(".conf")[0] for en in config_entries
                           if en.split(".conf")[0] in (self.old_entry, self.new_entry)]
 
-        old_conf = True if self.old_entry in config_matches else False
-        new_conf = True if self.new_entry in config_matches else False
+        old_conf = self.old_entry in config_matches
+        new_conf = self.new_entry in config_matches
 
         if old_conf and (self.old_boot_environment == self.boot_environment):
             ZELogger.log({
@@ -140,7 +139,7 @@ class SystemdBoot(plugin_config.Plugin):
                 # First replace 'linux, initrd' entries
                 replace_linux_pattern = (
                     r'(linux|initrd)(\s*)(/env/zedenv-)({boot_env})(/.*$)'
-                ).format(boot_env=str(old_be_string))
+                ).format(boot_env=old_be_string)
 
                 new_conf_list = self.__config_replace(
                     new_conf_list, replace_linux_pattern,
@@ -174,10 +173,10 @@ class SystemdBoot(plugin_config.Plugin):
                     "message": f"Replacing old entry with:\n{''.join(new_entry_list)}.\n"
                 })
 
-                if not self.noconfirm:
-                    if click.confirm(
+                if click.confirm(
                             "Would you like to edit the generated bootloader config?",
                             default=True):
+                    if not self.noconfirm:
                         click.edit(filename=temp_bootloader_file)
 
     def modify_bootloader(self, temp_esp: str, ):
@@ -209,20 +208,19 @@ class SystemdBoot(plugin_config.Plugin):
                         "level": "EXCEPTION",
                         "message": os_err
                     }, exit_on_error=True)
-        else:
-            if not self.noop:
-                try:
-                    shutil.copytree(real_old_dataset_kernel, temp_new_dataset_kernel)
-                except PermissionError as e:
-                    ZELogger.log({
-                        "level": "EXCEPTION",
-                        "message": f"Require Privileges to write to {temp_new_dataset_kernel}\n{e}"
-                    }, exit_on_error=True)
-                except IOError as e:
-                    ZELogger.log({
-                        "level": "EXCEPTION",
-                        "message": f"IOError writing to {temp_new_dataset_kernel}\n{e}"
-                    }, exit_on_error=True)
+        elif not self.noop:
+            try:
+                shutil.copytree(real_old_dataset_kernel, temp_new_dataset_kernel)
+            except PermissionError as e:
+                ZELogger.log({
+                    "level": "EXCEPTION",
+                    "message": f"Require Privileges to write to {temp_new_dataset_kernel}\n{e}"
+                }, exit_on_error=True)
+            except IOError as e:
+                ZELogger.log({
+                    "level": "EXCEPTION",
+                    "message": f"IOError writing to {temp_new_dataset_kernel}\n{e}"
+                }, exit_on_error=True)
 
     def edit_bootloader_default(self, temp_esp: str, overwrite: bool):
         real_loader_dir_path = os.path.join(self.zedenv_properties["esp"], "loader")

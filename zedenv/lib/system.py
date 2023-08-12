@@ -41,9 +41,7 @@ def mount(call_args: List[str] = None,
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Failed to get mount data.\n{e}\n.")
 
-    mount_list = mount_output.splitlines()
-
-    return mount_list
+    return mount_output.splitlines()
 
 
 def umount(target: str, call_args: List[str] = None):
@@ -83,11 +81,10 @@ def zfs_manual_mount(dataset: str, mountpoint: str, call_args: Optional[list] = 
     try:
         mount(call_args=mount_call)
     except RuntimeError:
-        if len(mount_call) != len(mount_call_fallback):
-            try:
-                # Using `-o zfsutil` fails if we want to mount a dataset that is already mounted
-                mount(call_args=mount_call_fallback)
-            except RuntimeError:
-                raise
-        else:
+        if len(mount_call) == len(mount_call_fallback):
+            raise
+        try:
+            # Using `-o zfsutil` fails if we want to mount a dataset that is already mounted
+            mount(call_args=mount_call_fallback)
+        except RuntimeError:
             raise

@@ -45,16 +45,17 @@ class ZECLI(click.MultiCommand):
     """
 
     def list_commands(self, ctx):
-        rv = []
-        for filename in os.listdir(command_modules_folder):
-            if filename.endswith('.py') and not filename.startswith('__init__'):
-                rv.append(filename[:-3])
+        rv = [
+            filename[:-3]
+            for filename in os.listdir(command_modules_folder)
+            if filename.endswith('.py') and not filename.startswith('__init__')
+        ]
         rv.sort()
         return rv
 
     def get_command(self, ctx, name):
         ns = {}
-        fn = os.path.join(command_modules_folder, name + '.py')
+        fn = os.path.join(command_modules_folder, f'{name}.py')
         if not os.path.isfile(fn):
             sys.exit(f"Command '{name}' doesn't exist, run 'zedenv --help'")
         with open(fn) as f:

@@ -29,15 +29,14 @@ def get_clones(root_dataset: str,
         if zfs_utility.is_snapshot(existing_dataset):
             snap_suffix = existing_dataset.rsplit('@', 1)[-1]
             list_dataset = zfs_utility.snapshot_parent_dataset(existing_dataset)
+        elif zfs_utility.dataset_exists(existing_dataset):
+            snap_suffix = zedenv.lib.be.snapshot(existing, parent_dataset)
+            list_dataset = f"{parent_dataset}/{existing}"
         else:
-            if zfs_utility.dataset_exists(existing_dataset):
-                snap_suffix = zedenv.lib.be.snapshot(existing, parent_dataset)
-                list_dataset = f"{parent_dataset}/{existing}"
-            else:
-                ZELogger.log({
-                    "level": "EXCEPTION",
-                    "message": f"The dataset {existing_dataset} doesn't exist."
-                }, exit_on_error=True)
+            ZELogger.log({
+                "level": "EXCEPTION",
+                "message": f"The dataset {existing_dataset} doesn't exist."
+            }, exit_on_error=True)
     else:
         snap_suffix = zedenv.lib.be.snapshot(zfs_utility.dataset_child_name(root_dataset),
                                              parent_dataset)
@@ -52,12 +51,9 @@ def get_clones(root_dataset: str,
             "message": f"Failed to list datasets under {root_dataset}."
         }, exit_on_error=True)
 
-    for c in [line for line in clones.splitlines()]:
+    for c in list(clones.splitlines()):
         if zfs_utility.dataset_exists(f"{c}@{snap_suffix}", zfs_type="snapshot"):
-            if c == list_dataset:
-                child = ""
-            else:
-                child = zfs_utility.dataset_child_name(c)
+            child = "" if c == list_dataset else zfs_utility.dataset_child_name(c)
             clone_props = zedenv.lib.be.properties(
                 c, [["canmount", "noauto"]])
             clone_data.append({
@@ -169,9 +165,8 @@ def zedenv_create(parent_dataset: str,
         }, verbose)
 
         for source in clone_sources:
-            m = re.search(r"(.*)/zedenv-", boot_dataset)
-            if m:
-                boot_clone = f"{m.group(1)}/zedenv-{boot_environment}"
+            if m := re.search(r"(.*)/zedenv-", boot_dataset):
+                boot_clone = f"{m[1]}/zedenv-{boot_environment}"
                 try:
                     pyzfscmds.cmd.zfs_clone(
                         source['snapshot'], boot_clone, properties=source['properties'])

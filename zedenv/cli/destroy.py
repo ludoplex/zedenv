@@ -223,8 +223,7 @@ def destroy_element(target: str,
             for now this will do
             """
             origin_snaps = get_origin_snapshots(dataset)
-            clone_origin = get_clone_origin(dataset)
-            if clone_origin:
+            if clone_origin := get_clone_origin(dataset):
                 if not noconfirm:
                     click.echo(f"The origin snapshot '{clone_origin.split('@')[1]}' "
                                f"for the boot environment '{target}' "
@@ -331,9 +330,8 @@ def zedenv_destroy(target: str,
     # Destroy the dataset for the kernel and ramdisk files if a separate ZFS boot pool is used
     if zedenv.lib.be.extra_bpool():
         boot_dataset = pyzfscmds.system.agnostic.mountpoint_dataset("/boot")
-        m = re.search(r"(.*)/zedenv-", boot_dataset)
-        if m:
-            destroy_dataset = f"{m.group(1)}/zedenv-{target}"
+        if m := re.search(r"(.*)/zedenv-", boot_dataset):
+            destroy_dataset = f"{m[1]}/zedenv-{target}"
             ds_is_snapshot = pyzfscmds.utility.is_snapshot(destroy_dataset)
             destroy_element(target, destroy_dataset, ds_is_snapshot, verbose, noconfirm, noop)
         else:
